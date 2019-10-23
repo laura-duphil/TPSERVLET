@@ -47,18 +47,38 @@ public class ClientsEtat extends HttpServlet {
             try {   // Trouver la valeur du paramètre HTTP customerID
                 String val = request.getParameter("state");
                 if (val == null) {
-                    throw new Exception("La paramètre state n'a pas été transmis");
+                    val="CA";
                 }
                 // on doit convertir cette valeur en entier (attention aux exceptions !)
-                String state = String.valueOf(val);
+                //String state = String.valueOf(val);
  
-                DAO dao = new DAO(DataSourceFactory.getDataSource());
-                List<CustomerEntity> customer = dao.customersInState(state);
+                
+                
+                Methodes daoEtats = new Methodes(DataSourceFactory.getDataSource());
+                List<String> mesEtats = daoEtats.listeEtats();
+                
+               
+                List<CustomerEntity> customer = daoEtats.customersInState(val);
+                
                 if (customer == null) {
                     throw new Exception("etat inconnu");
                 }
+                if (mesEtats == null) {
+                    throw new Exception("aucun etat");
+                }
+                /*Liste déroulante*/
+                out.println("<form>");
+                out.println("<select name='state'>");
+                for (String s : mesEtats){ 
+                    out.printf("<option value='%s'> %s </option>",s,s );
+                }
+                
+                out.println("</select>");
+                out.println("<input type='submit'>");
+                out.println("</form>");
+                
                 out.println("<table border=1>");
-                out.println("<th><td>Customer</td><td>Name</td><td>Address</td></th>");
+                out.println("<tr><th>Customer</th><th>Name</th><th>Address</th></tr>");
                 for (CustomerEntity c : customer){      
                     out.printf("<tr><td> %d </td><td> %s </td><td> %s</td></tr>",
                         c.getCustomerId(),
@@ -69,7 +89,6 @@ public class ClientsEtat extends HttpServlet {
             } catch (Exception e) {
                 out.printf("Erreur : %s", e.getMessage());
             }
-            out.println("<h1>Servlet ClientsEtat at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
